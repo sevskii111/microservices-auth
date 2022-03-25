@@ -3,19 +3,12 @@ package main
 import (
 	"errors"
 	"net/http"
-	"net/url"
 
 	"github.com/sevskii111/microservices-auth/pkg/forms"
 	"github.com/sevskii111/microservices-auth/pkg/models"
 )
 
 func (app *application) register(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
 	form := forms.New(r.PostForm)
 	form.Required("username", "password")
 	form.MaxLength("username", 255)
@@ -23,7 +16,7 @@ func (app *application) register(w http.ResponseWriter, r *http.Request) {
 	form.MinLength("password", 8)
 
 	if form.Valid() {
-		err = app.users.Insert(form.Get("username"), form.Get("password"))
+		err := app.users.Insert(form.Get("username"), form.Get("password"))
 		if err != nil {
 			if errors.Is(err, models.ErrDuplicateUsername) {
 				form.Errors.Add("username", "Username is taken")
@@ -39,12 +32,6 @@ func (app *application) register(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) auth(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
-		return
-	}
-
 	form := forms.New(r.PostForm)
 	form.Required("username", "password")
 
@@ -72,23 +59,6 @@ func (app *application) auth(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) refresh(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		refreshToken := ""
-		refreshTokenCookie, err := r.Cookie("refreshToken")
-		if err == nil {
-			refreshToken = refreshTokenCookie.Value
-		}
-		r.PostForm = url.Values{
-			"refreshToken": []string{refreshToken},
-		}
-	} else {
-		err := r.ParseForm()
-		if err != nil {
-			app.clientError(w, http.StatusBadRequest)
-			return
-		}
-	}
-
 	form := forms.New(r.PostForm)
 	form.Required("refreshToken")
 
@@ -115,4 +85,19 @@ func (app *application) refresh(w http.ResponseWriter, r *http.Request) {
 	}
 
 	app.authUser(w, user)
+}
+
+func (app *application) logout(w http.ResponseWriter, r *http.Request) {
+	form := forms.New(r.PostForm)
+	form.Required("refreshToken")
+
+	if !form.Valid() {
+		app.formResult(w, form)
+		return
+	}
+
+	app.refreshTokens.GetUserId(form.Get("refreshToken"))
+
+	w.Header().Set("Set-Cookie", "refreshToken=; HttpOnly; Max-Age=0")
+	app.json(w, JSONRes{Success: true})
 }

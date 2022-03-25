@@ -12,7 +12,7 @@ import (
 	"github.com/sevskii111/microservices-auth/pkg/models"
 )
 
-type FormRes struct {
+type JSONRes struct {
 	Errors  forms.FormErrors
 	Success bool
 }
@@ -33,7 +33,7 @@ func (app *application) json(w http.ResponseWriter, res interface{}) {
 }
 
 func (app *application) formResult(w http.ResponseWriter, form *forms.Form) {
-	res := FormRes{
+	res := JSONRes{
 		Errors:  form.Errors,
 		Success: form.Valid(),
 	}

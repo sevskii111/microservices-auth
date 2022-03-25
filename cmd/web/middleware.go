@@ -3,7 +3,23 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 )
+
+func refreshTokenCookieAsForm(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		refreshToken := ""
+		refreshTokenCookie, err := r.Cookie("refreshToken")
+		if err == nil {
+			refreshToken = refreshTokenCookie.Value
+		}
+		r.PostForm = url.Values{
+			"refreshToken": []string{refreshToken},
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
 
 func secureHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -31,6 +47,17 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 			}
 		}()
 
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) parseForm(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		err := r.ParseForm()
+		if err != nil {
+			app.clientError(w, http.StatusBadRequest)
+			return
+		}
 		next.ServeHTTP(w, r)
 	})
 }
