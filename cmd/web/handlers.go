@@ -31,7 +31,7 @@ func (app *application) register(w http.ResponseWriter, r *http.Request) {
 	app.formResult(w, form)
 }
 
-func (app *application) auth(w http.ResponseWriter, r *http.Request) {
+func (app *application) logIn(w http.ResponseWriter, r *http.Request) {
 	form := forms.New(r.PostForm)
 	form.Required("username", "password")
 

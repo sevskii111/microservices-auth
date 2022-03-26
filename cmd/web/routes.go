@@ -13,12 +13,12 @@ func (app *application) routes() http.Handler {
 	rtCookieAsFormMiddleware := alice.New(refreshTokenCookieAsForm)
 
 	mux := pat.New()
-	mux.Post("/register", formMiddleware.ThenFunc(app.register))
-	mux.Post("/auth", formMiddleware.ThenFunc(app.auth))
-	mux.Get("/refresh", rtCookieAsFormMiddleware.ThenFunc(app.refresh))
-	mux.Post("/refresh", formMiddleware.ThenFunc(app.refresh))
-	mux.Get("/logout", rtCookieAsFormMiddleware.ThenFunc(app.logout))
-	mux.Post("/logout", formMiddleware.ThenFunc(app.logout))
+	mux.Post("/auth/register", formMiddleware.ThenFunc(app.register))
+	mux.Post("/auth/login", formMiddleware.ThenFunc(app.logIn))
+	mux.Get("/auth/refresh", rtCookieAsFormMiddleware.ThenFunc(app.refresh))
+	mux.Post("/auth/refresh", formMiddleware.ThenFunc(app.refresh))
+	mux.Get("/auth/logout", rtCookieAsFormMiddleware.ThenFunc(app.logout))
+	mux.Post("/auth/logout", formMiddleware.ThenFunc(app.logout))
 
 	return standardMiddleware.Then(mux)
 }
