@@ -18,6 +18,7 @@ type JSONRes struct {
 }
 
 type AuthRes struct {
+	Success      bool
 	AccessToken  string
 	RefreshToken string
 }
@@ -60,6 +61,7 @@ func (app *application) authUser(w http.ResponseWriter, user *models.User) {
 	}
 	w.Header().Set("Set-Cookie", fmt.Sprintf("refreshToken=%s; HttpOnly", refreshToken.String()))
 	res := AuthRes{
+		Success:      true,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken.String(),
 	}
