@@ -61,9 +61,9 @@ func (app *application) authUser(w http.ResponseWriter, user *models.User) {
 	}
 	w.Header().Set("Set-Cookie", fmt.Sprintf("refreshToken=%s; HttpOnly", refreshToken.String()))
 	res := AuthRes{
-		Success:      true,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken.String(),
+		Success:      true,
 	}
 	app.json(w, res)
 }
